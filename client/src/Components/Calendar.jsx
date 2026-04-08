@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 
-const Calendar = () => {
+const Calendar = ({ setSelectedDate }) => {
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
@@ -11,13 +11,16 @@ const Calendar = () => {
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
 
-  // 🔥 total days in month
   const totalDays = new Date(year, month + 1, 0).getDate()
-
-  // 🔥 first day offset (0-6)
   const firstDay = new Date(year, month, 1).getDay()
 
+  const today = new Date()
+
   const handleClick = (day) => {
+
+    const selected = new Date(year, month, day)
+    setSelectedDate(selected)
+
     if (!range.start || (range.start && range.end)) {
       setRange({ start: day, end: null })
     } else {
@@ -36,7 +39,6 @@ const Calendar = () => {
     return false
   }
 
-  // 🔥 month change
   const changeMonth = (dir) => {
     setCurrentDate(new Date(year, month + dir, 1))
     setRange({ start: null, end: null })
@@ -50,7 +52,7 @@ const Calendar = () => {
 
         <button
           onClick={() => changeMonth(-1)}
-          className='px-3 py-1 bg-gray-800 rounded-lg'
+          className='px-3 py-1 bg-gray-800 rounded-lg hover:bg-gray-700 transition'
         >
           ◀
         </button>
@@ -61,7 +63,7 @@ const Calendar = () => {
 
         <button
           onClick={() => changeMonth(1)}
-          className='px-3 py-1 bg-gray-800 rounded-lg'
+          className='px-3 py-1 bg-gray-800 rounded-lg hover:bg-gray-700 transition'
         >
           ▶
         </button>
@@ -78,18 +80,23 @@ const Calendar = () => {
       {/* Dates */}
       <div className='grid grid-cols-7 gap-3 justify-items-center'>
 
-        {/* 🔥 Empty spaces (alignment fix) */}
+        {/* Empty spaces */}
         {Array.from({ length: firstDay }).map((_, i) => (
           <div key={"empty" + i}></div>
         ))}
 
-        {/* Actual days */}
+        {/* Days */}
         {Array.from({ length: totalDays }, (_, i) => {
           const day = i + 1
 
           const isStart = day === range.start
           const isEnd = day === range.end
           const inRange = isInRange(day)
+
+          const isToday =
+            day === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear()
 
           return (
             <motion.div
@@ -102,7 +109,9 @@ const Calendar = () => {
                   ? "bg-indigo-600 text-white rounded-full shadow-md"
                   : inRange
                     ? "bg-indigo-500/30 text-white rounded-full"
-                    : "bg-[#0f172a] text-gray-300 hover:bg-gray-700 rounded-full"
+                    : isToday
+                      ? "border border-indigo-400 text-indigo-300 rounded-full"
+                      : "bg-[#0f172a] text-gray-300 hover:bg-gray-700 rounded-full"
                 }
               `}
             >

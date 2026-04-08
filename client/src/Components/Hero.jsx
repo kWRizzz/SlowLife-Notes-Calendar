@@ -1,38 +1,81 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { WiDaySunny, WiRain, WiCloudy } from 'react-icons/wi'
 
-const Hero = () => {
+const Hero = ({ selectedDate }) => {
+
+  const [weather, setWeather] = useState(null)
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const dateStr = selectedDate.toISOString().split("T")[0]
+
+        const res = await fetch(
+          `https://archive-api.open-meteo.com/v1/archive?latitude=26.85&longitude=80.95&start_date=${dateStr}&end_date=${dateStr}&daily=weathercode,temperature_2m_max`
+        )
+
+        const data = await res.json()
+
+        setWeather({
+          temp: data.daily.temperature_2m_max[0],
+          code: data.daily.weathercode[0]
+        })
+
+      } catch (err) {
+        console.log(err)
+      }
+    }
+
+    fetchWeather()
+  }, [selectedDate])
+
+  const getWeatherIcon = (code) => {
+    if (code === 0) return <WiDaySunny size={40} />
+    if (code >= 1 && code <= 3) return <WiCloudy size={40} />
+    return <WiRain size={40} />
+  }
+
   return (
     <div className="relative w-full h-[160px] md:h-[180px] overflow-hidden rounded-2xl">
 
-      {/* Background */}
       <img
         src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85"
         className="w-full h-full object-cover scale-110"
       />
 
-      {/* Overlay */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-[3px]" />
 
-      {/* Content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 text-white">
 
         <motion.p
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+          key={selectedDate}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           className="text-[10px] tracking-[0.3em] text-gray-300 uppercase"
         >
-          January 2024
+          {selectedDate.toDateString()}
         </motion.p>
 
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
           className="text-xl md:text-3xl font-medium mt-2"
         >
           Slow Living Perspective
         </motion.h1>
+
+        {weather && (
+          <motion.div
+            key={weather.temp}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 mt-3 text-sm"
+          >
+            {getWeatherIcon(weather.code)}
+            <span>{weather.temp}°C</span>
+          </motion.div>
+        )}
 
       </div>
 
