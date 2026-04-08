@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import SideBar from './Components/SideBar'
 import Hero from './Components/Hero'
 import Calendar from './Components/Calendar'
@@ -10,10 +10,18 @@ const App = () => {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [theme, setTheme] = useState("dark")
 
-  const [mouse, setMouse] = useState({ x: 0, y: 0 })
+  const glowRef = useRef(null)
+  let frame
 
   const handleMouseMove = (e) => {
-    setMouse({ x: e.clientX, y: e.clientY })
+    if (!glowRef.current) return
+
+    cancelAnimationFrame(frame)
+
+    frame = requestAnimationFrame(() => {
+      glowRef.current.style.transform =
+        `translate(${e.clientX - 120}px, ${e.clientY - 120}px)`
+    })
   }
 
   const bgClass = theme === "dark"
@@ -26,16 +34,14 @@ const App = () => {
       className={`relative min-h-screen transition-all duration-500 text-white ${bgClass}`}
     >
 
-      {/* 🔥 Mouse Glow */}
+      {/* Smooth Glow */}
       <div
-        className="pointer-events-none fixed w-64 h-64 rounded-full blur-3xl opacity-30"
+        ref={glowRef}
+        className="pointer-events-none fixed w-64 h-64 rounded-full blur-3xl opacity-30 will-change-transform"
         style={{
           background: theme === "dark"
-            ? "rgba(99,102,241,0.3)"
-            : "rgba(168,85,247,0.4)",
-          left: mouse.x - 120,
-          top: mouse.y - 120,
-          transition: "0.05s"
+            ? "rgba(99,102,241,0.25)"
+            : "rgba(168,85,247,0.35)"
         }}
       />
 
